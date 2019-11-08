@@ -51,5 +51,7 @@ class Trainer(object):
 
                 loss_avg += loss.item()
 
+            print('epoch:', e, ' train_loss:', float(loss_avg / num_batches))
+
         # Todo: change path
         torch.save(model.state_dict(), ".")

@@ -27,8 +27,8 @@ class Attention(nn.Module):
                     models.
         """
         attention_m = compute_attention_matrix(x1, x2, self.match_score)
-        x1_vec = attention_m.sum(dim=1)
-        x2_vec = attention_m.sum(dim=2)
+        x1_vec = attention_m.sum(dim=2)
+        x2_vec = attention_m.sum(dim=3)
         w1 = self.wp_x1(x1, x1_vec)
         w2 = self.wp_x2(x2, x2_vec)
         return w1, w2

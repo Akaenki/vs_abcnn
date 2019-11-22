@@ -3,6 +3,8 @@ import torch.nn as nn
 
 from model.pooling import AllAP, WidthAP
 
+import psutil
+
 
 class Attention(nn.Module):
     """
@@ -27,8 +29,8 @@ class Attention(nn.Module):
                     models.
         """
         attention_m = compute_attention_matrix(x1, x2, self.match_score)
-        x1_vec = attention_m.sum(dim=1)
-        x2_vec = attention_m.sum(dim=2)
+        x1_vec = attention_m.sum(dim=2)
+        x2_vec = attention_m.sum(dim=1)
         w1 = self.wp_x1(x1, x1_vec)
         w2 = self.wp_x2(x2, x2_vec)
         return w1, w2
@@ -51,13 +53,13 @@ def compute_attention_matrix(x1, x2, match_score):
                 A batch of attention feature maps.
     """
     batch_size = x1.shape[0]
-    x1_length, x2_length = x1.shape[2]
+    x1, x2 = x1.squeeze(1), x2.squeeze(1)
+    x1_length, x2_length = x1.shape[1], x2.shape[1]
     A = torch.empty((batch_size, x1_length, x2_length), dtype=torch.float)
     for i in range(x1_length):
         for j in range(x2_length):
-            b1 = x1[:, i, :]
-            b2 = x2[:, j, :]
-            A[:, i, j] = match_score(b1, b2)
+            A[:, i, j] = match_score(x1[:, i, :], x2[:, j, :])
+    print(psutil.virtual_memory())
     return A
 
 
@@ -70,4 +72,4 @@ def euclidean(x1, x2):
             scores: torch.Tensor of shape (batch_size, 1)
                 The match-scores for the batches of vectors x1 and x2.
     """
-    return 1.0 / (1.0 + torch.norm(x1 - x2, p=2, dim=2))
+    return 1.0 / (1.0 + torch.norm(x1 - x2, p=2, dim=1))

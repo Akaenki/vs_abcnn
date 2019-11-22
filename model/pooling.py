@@ -9,7 +9,7 @@ class AllAP(nn.Module):
 
     def __init__(self, width):
         super(AllAP, self).__init__()
-        self.ap = nn.AvgPool2d((1, width), stride=1)
+        self.ap = nn.AvgPool2d((width, 1), stride=1)
 
     def forward(self, x):
         """
@@ -20,8 +20,7 @@ class AllAP(nn.Module):
                 output: torch.Tensor
                     representation vector of size (batch_size, width)
         """
-
-        return self.ap(x).squeeze(1).squeeze(2)
+        return self.ap(x).squeeze(1).squeeze(1)
 
 
 class WidthAP(nn.Module):
@@ -47,9 +46,10 @@ class WidthAP(nn.Module):
         """
         pools = []
         attention_matrix = attention_matrix.unsqueeze(1).unsqueeze(3)
-        for i in range(self.sentence_length):
+        #print(x.shape, attention_matrix.shape)
+        for i in range(self.length):
             pools.append(
-                (x[:, :, i:i + self.filter_width, :]
-                 * attention_matrix[:, :, i:i + self.filter_width, :]).sum(dim=2, eepdim=True))
+                (x[:, :, i:i + self.width, :]
+                 * attention_matrix[:, :, i:i + self.width, :]).sum(dim=2, keepdim=True))
 
         return torch.cat(pools, dim=2)

@@ -33,12 +33,14 @@ class NewDataset(Dataset):
         with open(self.CSV_PATH / self.pairs[index]) as f:
             prt, cpd, label, _, _, _ = f.readline().strip().split()
             label = int(label)
+            label_onehot = torch.zeros(2)
+            label_onehot[label] = 1
         with open(self.CPD_PATH / "{0}.csv".format(cpd)) as f:
             cpd_seq = [int(num) for num in ",".join(line.strip() for line in f).split(',')]
         prt_seq = self.proteins[prt]
         cpd_seq = cpd_seq + [0] * (self.maxcpd - len(cpd_seq))
         prt_seq = prt_seq + [0] * (self.maxprt - len(prt_seq))
-        return (Tensor(cpd_seq).long(), Tensor(prt_seq).long()), label
+        return (Tensor(cpd_seq).long(), Tensor(prt_seq).long()), label_onehot
 
 class Trainer(object):
     def __init__(self, model):
